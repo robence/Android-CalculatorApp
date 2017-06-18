@@ -1,20 +1,22 @@
- package com.robence.calculator;
+package com.robence.calculator;
 
- import android.os.Bundle;
+import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
- public class MainActivity extends AppCompatActivity {
-     private EditText result;
-     private EditText newNumber;
-     private TextView displayOperation;
+public class MainActivity extends AppCompatActivity {
+    private EditText result;
+    private EditText newNumber;
+    private TextView displayOperation;
 
-     private Double operand1 = null;
-     private Double operand2 = null;
-     private String pendingOperation = "=";
+    private Double operand1 = null;
+    private String pendingOperation = "=";
+
+    private static final String STATE_PENDING_OPERATION = "PendingOperation";
+    private static final String STATE_OPERAND1 = "Operand1";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,41 +88,54 @@ import android.widget.TextView;
         buttonPlus.setOnClickListener(opListener);
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putString(STATE_PENDING_OPERATION, pendingOperation);
+        if (operand1 != null) {
+            outState.putDouble(STATE_OPERAND1, operand1);
+        }
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        pendingOperation = savedInstanceState.getString(STATE_PENDING_OPERATION);
+        operand1 = savedInstanceState.getDouble(STATE_OPERAND1);
+        displayOperation.setText(pendingOperation);
+    }
+
     private void performOperation(Double value, String operation) {
         if (null == operand1) {
             operand1 = value;
         } else {
-            operand2 = value;
-
             if (pendingOperation.equals("=")) {
                 pendingOperation = operation;
             }
             switch (pendingOperation) {
                 case "=":
-                    operand1 = operand2;
+                    operand1 = value;
                     break;
                 case "/":
-                    if (operand2 == 0) {
+                    if (value == 0) {
                         operand1 = 0.0;
                     } else {
-                        operand1 /= operand2;
+                        operand1 /= value;
                     }
                     break;
                 case "*":
-                    operand1 *= operand2;
+                    operand1 *= value;
                     break;
                 case "-":
-                    operand1 -= operand2;
+                    operand1 -= value;
                     break;
                 case "+":
-                    operand1 += operand2;
+                    operand1 += value;
                     break;
             }
         }
 
         result.setText(operand1.toString());
         newNumber.setText("");
-
     }
-
 }
